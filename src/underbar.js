@@ -177,12 +177,30 @@
 	// Determine whether all of the elements match a truth test.
 	_.every = function(collection, iterator) {
 		// TIP: Try re-using reduce() here.
+		!iterator && (iterator=_.identity);
+		return _.reduce(collection, function(acc,el,i,arr){
+			acc===true && iterator(el)==false && (acc=false); 
+			acc===true && !el && (acc=false);
+			return acc;
+		},true);
 	};
 
 	// Determine whether any of the elements pass a truth test. If no iterator is
 	// provided, provide a default one
 	_.some = function(collection, iterator) {
 		// TIP: There's a very clever way to re-use every() here.
+		// return _.reduce(collection, function(acc, el, i, coll ){
+		// 	acc===false && callback(el, i, coll) && (acc=true); 
+		// 	return acc;
+		// }, false)
+		return _.reduce(collection, function(acc, el, i, coll ){
+			acc===false && iterator(el) && (acc=true); 
+			return acc;
+		}, false)
+		var result = _.reduce( collection, function( acc, elem ){
+			return (acc || iterator(elem) )
+		}, false );
+		return result;
 	};
 
 
@@ -205,11 +223,25 @@
 	//     bla: "even more stuff"
 	//   }); // obj1 now contains key1, key2, key3 and bla
 	_.extend = function(obj) {
+		var args = Array.prototype.slice.call(arguments, 1);
+		_.each(args, function(newItems, i, args ){
+			_.each(newItems, function( value, key, newItem ){
+				obj[key] = value;
+			});
+		});
+		return obj;
 	};
 
 	// Like extend, but doesn't ever overwrite a key that already
 	// exists in obj
 	_.defaults = function(obj) {
+		var args = Array.prototype.slice.call(arguments, 1);
+		_.each(args, function(newItems, i, args ){
+			_.each(newItems, function( value, key, newItem ){
+				obj[key]===undefined && (obj[key] = value);
+			});
+		});
+		return obj;
 	};
 
 
@@ -305,6 +337,15 @@
 	// Example:
 	// _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
 	_.zip = function() {
+		var args = Array.prototype.slice.call(arguments, 1);
+		return _.reduce(arguments[0],function(acc,e,i,a){
+			var result = _.reduce(args, function(acc2, e2, i2, a2){
+				acc2.push(e2[i]);
+				return acc2;     
+			},[e]);
+			acc.push(result);
+			return acc; 
+		},[]);
 	};
 
 	// Takes a multidimensional array and converts it to a one-dimensional array.
@@ -312,16 +353,45 @@
 	//
 	// Hint: Use Array.isArray to check if something is an array
 	_.flatten = function(nestedArray, result) {
+		return _.reduce(nestedArray, function(acc, el){
+			if( Array.isArray(el) ){
+				acc = acc.concat( _.flatten(el) );
+			}else{
+				acc = acc.concat(el);
+			}
+			return acc;
+		},[]);
 	};
 
 	// Takes an arbitrary number of arrays and produces an array that contains
 	// every item shared between all the passed-in arrays.
 	_.intersection = function() {
+		var argArrays = Array.prototype.slice.call(arguments);        
+		// console.log(argArrays);
+		var obj={}
+		_.each(arguments, function(subArr, i, arr){
+				_.each(subArr, function(el, j, subarr){
+					!obj[el] ? obj[el]=1 : obj[el]++ ;     
+				});
+			});
+		return _.reduce(obj, function(acc, value, key, obj){
+			return value===argArrays.length ? acc=acc.concat(key) : acc=acc ;
+		},[ ] );
 	};
 
 	// Take the difference between one array and a number of other arrays.
 	// Only the elements present in just the first array will remain.
 	_.difference = function(array) {
+		var argArrays = Array.prototype.slice.call(arguments);        
+		var obj={}
+		_.each(arguments, function(subArr, i, arr){
+				_.each(subArr, function(el, j, subarr){
+					!obj[el] ? obj[el]=1 : obj[el]++ ;     
+				});
+			});
+		return _.reduce(obj, function(acc, value, key, obj){
+			return value===1 ? acc=acc.concat(key) : acc=acc ;
+		},[ ] );
 	};
 
 	// Returns a function, that, when invoked, will only be triggered at most once
