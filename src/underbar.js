@@ -97,7 +97,6 @@
 		_.each(array, function(item, i, collection){
 			!result[item]  && (result[item]=1)
 		});
-		console.log(result);
 		return _.map(Object.keys(result), function(el){
 			return parseInt(el);
 		});
@@ -125,10 +124,10 @@
 	// Takes an array of objects and returns and array of the values of
 	// a certain property in it. E.g. take an array of people and return
 	// an array of just their ages
-	_.pluck = function(collection, key) {
 		// TIP: map is really handy when you want to transform an array of
 		// values into a new array of values. _.pluck() is solved for you
 		// as an example of this.
+	_.pluck = function(collection, key) {
 		return _.map(collection, function(item){
 			return item[key];
 		});
@@ -175,34 +174,28 @@
 
 
 	// Determine whether all of the elements match a truth test.
-	_.every = function(collection, iterator) {
 		// TIP: Try re-using reduce() here.
-		!iterator && (iterator=_.identity);
+	_.every = function(collection, iterator) {
+		!iterator && ( iterator = _.identity );
 		return _.reduce(collection, function(acc,el,i,arr){
-			acc===true && iterator(el)==false && (acc=false); 
-			acc===true && !el && (acc=false);
+			el === undefined && (acc = false);
+			acc === true && iterator(el,i,arr)==false && (acc=false); 
 			return acc;
 		},true);
 	};
 
 	// Determine whether any of the elements pass a truth test. If no iterator is
 	// provided, provide a default one
-	_.some = function(collection, iterator) {
 		// TIP: There's a very clever way to re-use every() here.
-		// return _.reduce(collection, function(acc, el, i, coll ){
-		// 	acc===false && callback(el, i, coll) && (acc=true); 
-		// 	return acc;
-		// }, false)
-		return _.reduce(collection, function(acc, el, i, coll ){
-			acc===false && iterator(el) && (acc=true); 
+	_.some = function(collection, iterator) {
+		!iterator && ( iterator = _.identity );
+		return _.reduce(collection, function(acc,el,i,arr){
+			if(acc === false){
+				return iterator(el,i,arr) ? true : false;
+			} 
 			return acc;
-		}, false)
-		var result = _.reduce( collection, function( acc, elem ){
-			return (acc || iterator(elem) )
-		}, false );
-		return result;
+		},false);
 	};
-
 
 	/**
 	 * OBJECTS
@@ -285,6 +278,7 @@
 	// already computed the result for the given argument and return that value
 	// instead if possible.
 	_.memoize = function(func) {
+
 	};
 
 	// Delays a function for the given number of milliseconds, and then calls
@@ -294,6 +288,10 @@
 	// parameter. For example _.delay(someFunction, 500, 'a', 'b') will
 	// call someFunction('a', 'b') after 500ms
 	_.delay = function(func, wait) {
+	    var params = Array.prototype.slice.call( arguments, 2 );
+		return setTimeout( function(){
+			return func.apply( this, params );
+		}, wait);
 	};
 
 
@@ -308,6 +306,15 @@
 	// input array. For a tip on how to make a copy of an array, see:
 	// http://mdn.io/Array.prototype.slice
 	_.shuffle = function(array) {
+		var newArr = array.slice()
+		var idx, temp;
+		_.each(newArr, function(el, i, col){
+			idx = Math.floor(Math.random()*newArr.length);
+			temp = col[ idx ];
+			col[ idx ] = el;
+			col[ i ] = temp;
+		})
+		return newArr
 	};
 
 
