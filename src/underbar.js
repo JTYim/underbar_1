@@ -77,7 +77,7 @@
 	// Return all elements of an array that pass a truth test.
 	_.filter = function(collection, test) {
 		var result=[];
-		_.each(collection, function(item,i, col){
+		_.each(collection, function(item,i, collection){
 			test(item, i, collection) && (result.push(item));
 		})
 		return result;
@@ -109,8 +109,8 @@
 		// like each(), but in addition to running the operation on all
 		// the members, it also maintains an array of results.
 		var result=[];
-		_.each(collection, function(item, i, coll){
-			result.push( iterator(item, i, coll) );
+		_.each(collection, function(item, i, collection){
+			result.push( iterator(item, i, collection) );
 		});
 		return result;
 	};
@@ -218,7 +218,7 @@
 	_.extend = function(obj) {
 		var args = Array.prototype.slice.call(arguments, 1);
 		_.each(args, function(newItems, i, args ){
-			_.each(newItems, function( value, key, newItem ){
+			_.each(newItems, function( value, key, newItems ){
 				obj[key] = value;
 			});
 		});
@@ -278,7 +278,18 @@
 	// already computed the result for the given argument and return that value
 	// instead if possible.
 	_.memoize = function(func) {
-
+		// var args = Array.prototype.slice.call(arguments,0,1);
+		var result;
+		var argsHist={};
+		return function(){
+			var args=Array.prototype.slice.call(arguments)
+			if(args in argsHist===false){
+				result = func.apply(this, arguments);
+				argsHist[args] = result;
+			}
+			return result;
+		}
+		
 	};
 
 	// Delays a function for the given number of milliseconds, and then calls
